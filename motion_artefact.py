@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np 
 from scipy.optimize import curve_fit 
 from tqdm import tqdm 
-folder ="C:/motion_artefact"
 
 
 
@@ -144,16 +143,4 @@ def fit_exponential(spike):
     
     return np.concatenate([exp(x_data_asc, *popt_asc), exp_dec(x_data_dec, *popt)])
 
-
-
-
-
-df = load_data(os.path.join(folder, "trace2.csv"))
-test = align_traces(df,[0, 100], [30, 150])
-bool_mask = get_spikes(test)
-spike = extract_spike(test, bool_mask)
-plt.plot(spike)
-fit = fit_exponential(spike)
-plt.plot(spike, "b", alpha = 0.5)
-plt.plot(fit, "r--", linewidth=4)
     
