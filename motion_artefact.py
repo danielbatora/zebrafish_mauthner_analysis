@@ -109,12 +109,21 @@ def get_spikes(trace, thr = 3):
     return mean_trace > np.mean(mean_trace) + (thr * np.std(mean_trace))
 
 
-def extract_spike(trace, bool_mask, sensitivity = 5): 
+def extract_glu_spike(trace, bool_mask, sensitivity = 5): 
     
     mean_trace = trace.apply(np.mean)
     for i in range(len(mean_trace)):
         if all(bool_mask[i:i+5]): 
             return np.array(mean_trace[i-50: i+200])
+        
+def extract_gcamp_spike(trace, bool_mask, sensitivity = 5): 
+    
+    mean_trace = trace.apply(np.mean)
+    for i in range(len(mean_trace)):
+        if all(bool_mask[i:i+5]): 
+            return np.array(mean_trace[i-150: i+600])
+        
+        
 
 def exp_dec(x, a, b, c): 
     return a * np.exp(-b *x) + c
@@ -141,6 +150,37 @@ def fit_exponential(spike):
     axes[1].plot(x_data_dec, exp_dec(x_data_dec, *popt), "r--")
     
     
-    return np.concatenate([exp(x_data_asc, *popt_asc), exp_dec(x_data_dec, *popt)])
+    return np.concatenate([exp(x_data_asc, *popt_asc), exp_dec(x_data_dec, *popt)]), np.sqrt(np.diag(pcov)), np.sqrt(np.diag(pcov_asc))
 
+
+def mse(spike, fit): 
+    return np.sum(np.square(spike - fit)) * 1/len(spike)
+
+
+def bin_data(data, factor):
+    start = 0 
+    end = start + factor 
+    ranges = []
+    max_num = len(data)
+    for i in range(len(data)): 
+        if start > max_num: 
+            break 
+        elif end > max_num: 
+            end = max_num
+            ranges.append([start, end])
+            start += factor 
+            end += factor 
+        else: 
+            ranges.append([start, end])
+            start += factor 
+            end += factor 
     
+    binned_data = []
+    for i in ranges: 
+        binned_data.append(np.mean(data[i[0]: i[1]]))
+        
+    return np.array(binned_data)[~np.isnan(np.array(binned_data))]
+
+
+
+
